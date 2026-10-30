@@ -337,15 +337,21 @@ npx prisma db seed                   # services, sample testimonies, admin user
 
 ### 11.2 Prisma configuration
 
-Use two URLs: a pooled one for the app (serverless functions open many short connections) and a direct one for migrations.
+The project uses **Prisma 7**, where connection URLs no longer live in `schema.prisma`. Use two URLs: a pooled one for the app (serverless functions open many short connections) and a direct one for the CLI and migrations.
 
-```prisma
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
+- **CLI (migrate, seed, studio):** `prisma.config.ts` reads `DIRECT_URL` (falling back to `DATABASE_URL`).
+- **Running app:** `src/lib/db.ts` builds the client with the `@prisma/adapter-pg` driver adapter and the pooled `DATABASE_URL`.
+
+```ts
+// prisma.config.ts
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: { path: "prisma/migrations", seed: "tsx prisma/seed.ts" },
+  datasource: { url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"] },
+});
 ```
+
+The generated client is written to `src/generated/prisma` (git-ignored) and imported from `@/generated/prisma/client`.
 
 `package.json` scripts:
 
@@ -354,8 +360,10 @@ datasource db {
   "scripts": {
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio"
   }
 }
 ```

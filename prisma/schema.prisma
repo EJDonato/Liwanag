@@ -1,0 +1,113 @@
+// Liwanag database schema. See SYSTEM_DESIGN.md section 4.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Client {
+  id            String    @id @default(cuid())
+  referenceCode String    @unique
+  fullName      String
+  email         String?
+  phone         String?
+  birthdate     DateTime?
+  createdAt     DateTime  @default(now())
+
+  consent    ConsentForm?
+  privacy    PrivacyForm?
+  interview  InterviewForm?
+  assessment AssessmentForm?
+  exit       ExitForm?
+}
+
+model ConsentForm {
+  id           String   @id @default(cuid())
+  clientId     String   @unique
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  agreements   Json
+  guardianName String?
+  signature    String
+  signedAt     DateTime @default(now())
+}
+
+model PrivacyForm {
+  id              String   @id @default(cuid())
+  clientId        String   @unique
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  acknowledgments Json
+  signature       String
+  signedAt        DateTime @default(now())
+}
+
+model InterviewForm {
+  id          String   @id @default(cuid())
+  clientId    String   @unique
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  responses   Json
+  submittedAt DateTime @default(now())
+}
+
+model AssessmentForm {
+  id          String   @id @default(cuid())
+  clientId    String   @unique
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  responses   Json
+  totalScore  Int
+  submittedAt DateTime @default(now())
+}
+
+model ExitForm {
+  id             String   @id @default(cuid())
+  clientId       String   @unique
+  client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  ratings        Json
+  comments       String?
+  allowTestimony Boolean  @default(false)
+  submittedAt    DateTime @default(now())
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String
+  audience    String?
+  isActive    Boolean @default(true)
+}
+
+enum TestimonyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Testimony {
+  id          String          @id @default(cuid())
+  displayName String
+  content     String
+  rating      Int?
+  status      TestimonyStatus @default(PENDING)
+  createdAt   DateTime        @default(now())
+
+  @@index([status, createdAt])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Admin {
+  id           String @id @default(cuid())
+  username     String @unique
+  passwordHash String
+  role         String @default("STAFF")
+}
