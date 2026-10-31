@@ -2,54 +2,12 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { services } from "../src/lib/site";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
 });
 const prisma = new PrismaClient({ adapter });
-
-const services = [
-  {
-    name: "Individual Counseling",
-    description: "One-on-one, confidential sessions with a counselor in a safe and unhurried space.",
-    audience: "Students and young adults",
-  },
-  {
-    name: "Group Support Sessions",
-    description: "Guided small-group conversations where members share experiences and learn from one another.",
-    audience: "Anyone seeking community",
-  },
-  {
-    name: "Stress and Anxiety Workshops",
-    description: "Practical, hands-on sessions on coping skills, time management, and calming techniques.",
-    audience: "Students facing academic pressure",
-  },
-  {
-    name: "Peer Support Circle",
-    description: "Trained peer volunteers offer a listening ear and gentle guidance.",
-    audience: "Students",
-  },
-  {
-    name: "Mindfulness and Relaxation",
-    description: "Breathing, grounding, and guided relaxation sessions to restore calm.",
-    audience: "Everyone",
-  },
-  {
-    name: "Academic and Career Counseling",
-    description: "Support for school stress, goal setting, and planning your next steps.",
-    audience: "Students",
-  },
-  {
-    name: "Crisis Referral and Guidance",
-    description: "Immediate guidance and referral to emergency hotlines and partner professionals.",
-    audience: "Anyone in distress",
-  },
-  {
-    name: "Psycho-educational Talks",
-    description: "Informative talks that reduce stigma and build mental health awareness in schools.",
-    audience: "Schools and organizations",
-  },
-];
 
 const testimonies = [
   {
@@ -73,8 +31,8 @@ async function main() {
   for (const service of services) {
     await prisma.service.upsert({
       where: { name: service.name },
-      update: service,
-      create: service,
+      update: { description: service.description, audience: service.audience },
+      create: { name: service.name, description: service.description, audience: service.audience },
     });
   }
 

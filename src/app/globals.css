@@ -7,9 +7,17 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --color-night: var(--night);
+  --color-night-2: var(--night-2);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-mist: var(--mist);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-night-text: var(--night-text);
+  --color-night-muted: var(--night-muted);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,31 +56,37 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+  Liwanag palette, sampled from the logo (public/Liwanag Wellness Logo.png):
+  sun #f8d088, hills #a0b098 and #809078, wordmark #485848, on the hero's warm cream.
+  Forest ground carries the dark bands; sun yellow is the single action accent.
+*/
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #fefbf7;
+  --foreground: #263229;
+  --card: #ffffff;
+  --card-foreground: #263229;
+  --popover: #ffffff;
+  --popover-foreground: #263229;
+  --primary: #1f2d26;
+  --primary-foreground: #fefbf7;
+  --secondary: #e8eee4;
+  --secondary-foreground: #263229;
+  --muted: #e8eee4;
+  --muted-foreground: #4f5d4b;
+  --accent: #fdecc9;
+  --accent-foreground: #263229;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #d3dccd;
+  /* form-control borders need 3:1 against the page (WCAG 1.4.11) */
+  --input: #7d8d77;
+  --ring: #2c4034;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -81,40 +95,21 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-}
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* dark bands: deep forest */
+  --night: #1f2d26;
+  --night-2: #2c4034;
+  /* solid text on dark bands (>= 8.9:1 on --night) */
+  --night-text: #eaf0e5;
+  --night-muted: #c3cfbd;
+  /* light: the logo's sun, and a deeper core for the hero glow */
+  --sun: #f8d088;
+  --sun-soft: #fdecc9;
+  --sun-deep: #f5bf6a;
+  /* quiet sage surfaces and the hills' two greens */
+  --mist: #e8eee4;
+  --sage: #809078;
+  --sage-soft: #a0b098;
 }
 
 @layer base {
@@ -126,5 +121,60 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+  body {
+    caret-color: var(--ring);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--sun);
+    color: var(--night);
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  .on-night :focus-visible {
+    outline-color: var(--sun);
+  }
+}
+
+/* Transform only: text is fully visible even if the animation never runs. */
+@keyframes rise-in {
+  from {
+    transform: translateY(14px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: var(--rise-delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
   }
 }
