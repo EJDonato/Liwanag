@@ -1,9 +1,12 @@
 "use client";
 
+import { Check } from "lucide-react";
 import Link from "next/link";
 import { createContext, useActionState, useContext, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ButtonLink } from "@/components/button-link";
+import { HONEYPOT_FIELD, OPENED_AT_FIELD } from "@/lib/forms/guard";
+import { echoValues } from "@/lib/forms/read";
 import { idleState, type FormState } from "@/lib/forms/state";
 import { hotlines } from "@/lib/site";
 
@@ -43,9 +46,9 @@ function ErrorSummary({ state }: { state: FormState }) {
       ref={ref}
       tabIndex={-1}
       role="alert"
-      className="mb-8 rounded-2xl border-2 border-[#9b1c1c] bg-white p-5"
+      className="mb-8 rounded-2xl border-2 border-error bg-white p-5"
     >
-      <p className="font-semibold text-[#9b1c1c]">{state.message ?? "Something needs your attention."}</p>
+      <p className="font-semibold text-error">{state.message ?? "Something needs your attention."}</p>
       {entries.length > 0 && (
         <ul className="mt-3 list-disc space-y-1 pl-5">
           {entries.map(([name, msgs]) => (
@@ -75,16 +78,17 @@ function ReferenceCodeCard({
   onSavedChange: (saved: boolean) => void;
   askToConfirm: boolean;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
 
-  async function copy() {
+  async function copyCode() {
     try {
       await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      setCopy("copied");
     } catch {
-      // Clipboard can be blocked; the code is on screen and the other options still work.
+      // Clipboard is blocked on some browsers and insecure origins: say so, and point to the manual route.
+      setCopy("failed");
     }
+    setTimeout(() => setCopy("idle"), 4000);
   }
 
   function download() {
@@ -93,8 +97,11 @@ function ReferenceCodeCard({
     const link = document.createElement("a");
     link.href = url;
     link.download = `liwanag-${code}.txt`;
+    document.body.appendChild(link); // Firefox ignores clicks on detached links
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    // Revoking straight away cancels the download in some browsers.
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
   return (
@@ -106,23 +113,24 @@ function ReferenceCodeCard({
         different device. We cannot look it up for you.
       </p>
       <div className="mt-5 flex flex-wrap gap-3">
-        <button type="button" onClick={copy} className={smallButton}>
-          {copied ? "Copied" : "Copy code"}
+        <button type="button" onClick={copyCode} className={smallButton}>
+          {copy === "copied" ? "Copied" : "Copy code"}
         </button>
         <button type="button" onClick={download} className={smallButton}>
           Save as a file
         </button>
-        <span aria-live="polite" className="sr-only">
-          {copied ? "Reference code copied to clipboard" : ""}
-        </span>
       </div>
+      <p aria-live="polite" className={copy === "failed" ? "mt-3 font-medium" : "sr-only"}>
+        {copy === "copied" && "Reference code copied to clipboard."}
+        {copy === "failed" && "Copying was blocked. Select the code above and copy it, or write it down."}
+      </p>
       {askToConfirm && (
         <label className="mt-6 flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"
             checked={saved}
             onChange={(e) => onSavedChange(e.target.checked)}
-            className="mt-0.5 size-6 shrink-0 accent-[#1f2d26]"
+            className="mt-0.5 size-6 shrink-0 accent-night"
           />
           <span className="text-lg leading-snug">I have written down or saved my reference code.</span>
         </label>
@@ -151,29 +159,32 @@ function CrisisPanel() {
   );
 }
 
-// Soft points of light drifting up. Slow fades, no flashing; still and quiet for reduced motion.
+// Soft points of light drifting up, once. Each delay + duration stays under 5s; no flashing.
+// For reduced motion they sit still at --y instead.
 const motes = [
-  { x: "6%", s: "0.5rem", d: "9s", delay: "0s", y: "18%" },
-  { x: "14%", s: "0.9rem", d: "11s", delay: "2.5s", y: "62%" },
-  { x: "23%", s: "0.4rem", d: "8s", delay: "5s", y: "34%" },
-  { x: "32%", s: "0.7rem", d: "10s", delay: "1s", y: "72%" },
-  { x: "41%", s: "0.5rem", d: "12s", delay: "3.5s", y: "22%" },
-  { x: "50%", s: "1rem", d: "10s", delay: "6s", y: "55%" },
-  { x: "59%", s: "0.4rem", d: "9s", delay: "0.5s", y: "40%" },
-  { x: "68%", s: "0.8rem", d: "11s", delay: "4s", y: "68%" },
-  { x: "76%", s: "0.5rem", d: "8s", delay: "7s", y: "28%" },
-  { x: "84%", s: "0.9rem", d: "12s", delay: "2s", y: "50%" },
-  { x: "92%", s: "0.6rem", d: "10s", delay: "5.5s", y: "76%" },
+  { x: "6%", s: "0.4rem", d: "3.6s", delay: "0s", y: "18%" },
+  { x: "14%", s: "0.6rem", d: "4s", delay: "0.8s", y: "62%" },
+  { x: "23%", s: "0.35rem", d: "3.4s", delay: "1.4s", y: "34%" },
+  { x: "32%", s: "0.5rem", d: "3.8s", delay: "0.3s", y: "72%" },
+  { x: "41%", s: "0.4rem", d: "4s", delay: "0.9s", y: "22%" },
+  { x: "50%", s: "0.7rem", d: "3.6s", delay: "1.3s", y: "55%" },
+  { x: "59%", s: "0.35rem", d: "3.5s", delay: "0.1s", y: "40%" },
+  { x: "68%", s: "0.55rem", d: "4s", delay: "0.6s", y: "68%" },
+  { x: "76%", s: "0.4rem", d: "3.4s", delay: "1.5s", y: "28%" },
+  { x: "84%", s: "0.6rem", d: "3.8s", delay: "0.4s", y: "50%" },
+  { x: "92%", s: "0.45rem", d: "3.5s", delay: "1.1s", y: "76%" },
 ] as const;
 
 function Celebration({
   state,
   saved,
   onSavedChange,
+  headingRef,
 }: {
   state: FormState;
   saved: boolean;
   onSavedChange: (saved: boolean) => void;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
 }) {
   return (
     <div className="space-y-8">
@@ -199,13 +210,16 @@ function Celebration({
             />
           ))}
         </div>
-        <p className="font-semibold text-sun">All five steps complete</p>
-        <h2 className="mx-auto mt-3 max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h2
+          ref={headingRef}
+          tabIndex={-1}
+          className="mx-auto max-w-2xl scroll-mt-24 text-4xl font-semibold tracking-tight outline-none sm:text-5xl"
+        >
           You did it. Thank you for letting us in.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-night-text">
-          Taking these steps is not small. A counselor will be in touch using the contact method you
-          chose, and you can always reach us sooner.
+          All five steps are done, and taking them is not small. Our team will look over your forms. If
+          you told us how to reach you, we will use it, and you can always contact us sooner.
         </p>
         <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
           <ButtonLink href="/" variant="sun">
@@ -246,15 +260,38 @@ function Confirmation({
   celebrate: boolean;
 }) {
   const [saved, setSaved] = useState(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
-  if (celebrate) return <Celebration state={state} saved={saved} onSavedChange={setSaved} />;
+  // The submit button this replaces held keyboard focus. Land on the result so it is announced
+  // and keyboard and screen-reader users aren't dropped back at the top of the page.
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
+  if (celebrate) {
+    return <Celebration state={state} saved={saved} onSavedChange={setSaved} headingRef={headingRef} />;
+  }
 
   const blocked = requireSavedCode && !saved;
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
-        {state.notice && <p className="mt-4 max-w-xl text-lg leading-relaxed">{state.notice}</p>}
+      <div className="flex items-start gap-4">
+        <span
+          aria-hidden="true"
+          className="mt-1 flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-white"
+        >
+          <Check className="size-6" strokeWidth={2.5} />
+        </span>
+        <div>
+          <h2
+            ref={headingRef}
+            tabIndex={-1}
+            className="scroll-mt-24 text-3xl font-semibold tracking-tight outline-none sm:text-4xl"
+          >
+            {title}
+          </h2>
+          {state.notice && <p className="mt-4 max-w-xl text-lg leading-relaxed">{state.notice}</p>}
+        </div>
       </div>
 
       {state.crisis && <CrisisPanel />}
@@ -309,7 +346,27 @@ export function FormFrame({
   celebrate?: boolean;
   children: React.ReactNode;
 }) {
-  const [state, formAction] = useActionState(action, idleState);
+  // A dropped connection or a server fault would otherwise throw to the error page and lose
+  // everything typed. Forms that redirect on success (the resume form) skip this: their
+  // redirect travels as a signal that must not be caught.
+  const safeAction = async (prev: FormState, fd: FormData): Promise<FormState> => {
+    if (!successTitle) return action(prev, fd);
+    try {
+      return await action(prev, fd);
+    } catch {
+      return {
+        status: "error",
+        message:
+          "We could not reach the server, so nothing was saved. Your answers are still here: check your connection and press submit again.",
+        values: echoValues(fd),
+      };
+    }
+  };
+  const [state, formAction] = useActionState(safeAction, idleState);
+  const openedAt = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (openedAt.current) openedAt.current.value = String(Date.now());
+  }, []);
 
   if (state.status === "success" && successTitle && nextHref && nextLabel) {
     return (
@@ -328,14 +385,18 @@ export function FormFrame({
     <FormStateContext value={state}>
       <ErrorSummary state={state} />
       <form action={formAction} noValidate className="space-y-10">
+        {successTitle && (
+          <p className="text-muted-foreground">Every question is required unless it says optional.</p>
+        )}
         {children}
-        {/* Honeypot: hidden from people and assistive tech, irresistible to bots. */}
+        {/* Spam checks (see lib/forms/guard.ts): a trap field people never see, and a mount time. */}
         <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
           <label>
             Leave this field empty
-            <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+            <input type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" />
           </label>
         </div>
+        <input ref={openedAt} type="hidden" name={OPENED_AT_FIELD} defaultValue="" />
         <div className="flex flex-wrap items-center gap-4">
           <SubmitButton label={submitLabel} />
           {backLink && (

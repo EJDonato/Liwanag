@@ -65,6 +65,8 @@ export const services = [
     description:
       "Immediate guidance and referral to emergency hotlines and partner professionals.",
     audience: "Anyone in distress",
+    // The one service that is about help right now: the Services page gives it a warm highlight.
+    urgent: true,
   },
   {
     name: "Psycho-educational Talks",

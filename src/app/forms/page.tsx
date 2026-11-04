@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Check, Lock } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { resumeWithCode, startOver } from "@/app/forms/actions";
@@ -22,7 +23,7 @@ async function FormsHub() {
     <div className="grid gap-14 lg:grid-cols-[1.3fr_1fr] lg:gap-20">
       <div>
         {progress ? (
-          <div className="mb-8 rounded-2xl bg-mist p-6">
+          <div className="mb-8 rounded-2xl bg-mist p-6 [overflow-wrap:anywhere]">
             <p className="text-lg">
               Welcome back, <strong>{firstName(progress.fullName)}</strong>.
             </p>
@@ -46,22 +47,30 @@ async function FormsHub() {
                 <span
                   aria-hidden="true"
                   className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full font-heading text-base font-semibold ${
-                    done ? "bg-sage text-night" : locked ? "bg-mist text-muted-foreground" : "bg-night text-sun"
+                    done
+                      ? "bg-success text-white"
+                      : locked
+                        ? "bg-mist text-muted-foreground"
+                        : isNext
+                          ? "bg-sun text-night ring-2 ring-night"
+                          : "bg-night text-sun"
                   }`}
                 >
-                  {done ? "✓" : i + 1}
+                  {done ? <Check className="size-5" strokeWidth={2.5} /> : locked ? <Lock className="size-4" /> : i + 1}
                 </span>
                 <span>
                   <span className="block font-heading text-xl font-semibold">{step.name}</span>
                   <span className="mt-1 block text-muted-foreground">{step.text}</span>
-                  <span className="mt-1 block text-sm font-semibold">{status}</span>
+                  <span className={`mt-1 block text-sm font-semibold ${done ? "text-success" : ""}`}>
+                    {status}
+                  </span>
                 </span>
               </>
             );
             return (
               <li key={step.href}>
                 {locked ? (
-                  <div className="flex gap-5 rounded-2xl py-4 pr-4 opacity-80">{body}</div>
+                  <div className="flex gap-5 rounded-2xl py-4 pr-4">{body}</div>
                 ) : (
                   <Link
                     href={step.href}

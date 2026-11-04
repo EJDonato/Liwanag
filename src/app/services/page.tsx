@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ButtonLink } from "@/components/button-link";
 import { PageHeader } from "@/components/page-header";
 import { services } from "@/lib/site";
@@ -20,18 +21,35 @@ export default function ServicesPage() {
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-20">
         <ul className="divide-y divide-border border-b border-border">
-          {services.map((s) => (
-            <li
-              key={s.name}
-              className="grid gap-3 py-8 md:grid-cols-[1.1fr_1.4fr_0.8fr] md:gap-10"
-            >
-              <h2 className="font-heading text-2xl font-semibold sm:text-3xl">{s.name}</h2>
-              <p className="text-lg leading-relaxed">{s.description}</p>
-              <p className="text-muted-foreground">
-                <span className="font-semibold text-foreground">For:</span> {s.audience}
-              </p>
-            </li>
-          ))}
+          {services.map((s) => {
+            const urgent = "urgent" in s;
+            return (
+              <li
+                key={s.name}
+                className={`grid gap-3 py-8 md:grid-cols-[1.1fr_1.4fr_0.8fr] md:gap-10 ${
+                  urgent ? "-mx-3 rounded-2xl bg-accent px-3 sm:-mx-4 sm:px-4" : ""
+                }`}
+              >
+                <h2 className="font-heading text-2xl font-semibold sm:text-3xl">{s.name}</h2>
+                <p className="text-lg leading-relaxed">{s.description}</p>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>
+                    <span className="font-semibold text-foreground">For:</span> {s.audience}
+                  </p>
+                  {urgent && (
+                    <p>
+                      <Link
+                        href="/contact"
+                        className="font-semibold text-foreground underline underline-offset-4"
+                      >
+                        See hotline numbers
+                      </Link>
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </section>
 

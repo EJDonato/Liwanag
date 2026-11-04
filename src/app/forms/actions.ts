@@ -1,9 +1,9 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { z } from "zod";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { db } from "@/lib/db";
-import { echoValues, readForm } from "@/lib/forms/read";
+import { readForm } from "@/lib/forms/read";
+import { fail, invalid, screen } from "@/lib/forms/respond";
 import type { FormState } from "@/lib/forms/state";
 import { assessmentItems, bandMessages, scoreAssessment } from "@/lib/services/assessment";
 import { getProgress, missingStep, type Progress, type StepKey } from "@/lib/services/clients";
@@ -28,21 +28,6 @@ const stepNames: Record<StepKey, string> = {
   exit: "exit",
 };
 
-function fail(fd: FormData, message?: string, fieldErrors?: Record<string, string[]>): FormState {
-  return { status: "error", message, fieldErrors, values: echoValues(fd) };
-}
-
-function invalid(fd: FormData, error: z.ZodError): FormState {
-  const fieldErrors = z.flattenError(error).fieldErrors as Record<string, string[]>;
-  return fail(fd, "Please check the highlighted fields.", fieldErrors);
-}
-
-// Hidden "website" field: people never see it, bots fill it. Pretend it worked and store nothing.
-function isBot(fd: FormData) {
-  return typeof fd.get("website") === "string" && (fd.get("website") as string).length > 0;
-}
-const botSuccess: FormState = { status: "success", referenceCode: "LWN-0000-0000" };
-
 // Prisma Json columns reject `undefined`, so drop it.
 function toJson(value: unknown) {
   return JSON.parse(JSON.stringify(value));
@@ -53,6 +38,7 @@ async function guarded(fd: FormData, step: StepKey, run: () => Promise<FormState
   try {
     return await run();
   } catch (e) {
+    unstable_rethrow(e); // let Next's own redirect/not-found signals through
     if ((e as { code?: string }).code === "P2002") {
       return fail(fd, `The ${stepNames[step]} form is already on file for this reference code.`);
     }
@@ -80,17 +66,21 @@ function isFormState(value: Progress | FormState): value is FormState {
 }
 
 export async function submitConsent(_prev: FormState, fd: FormData): Promise<FormState> {
-  if (isBot(fd)) return botSuccess;
+  const blocked = screen(fd);
+  if (blocked) return blocked;
   const parsed = consentSchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
   const data = parsed.data;
 
-  const existing = await getProgress(await getReferenceCode());
-  if (existing?.done.consent) {
-    return fail(fd, "A consent form is already on file on this device. Use the Forms page to continue or start over.");
-  }
-
   return guarded(fd, "consent", async () => {
+    const existing = await getProgress(await getReferenceCode());
+    if (existing?.done.consent) {
+      return fail(
+        fd,
+        "A consent form is already on file on this device. Use the Forms page to continue or start over.",
+      );
+    }
+
     // A code collision is astronomically unlikely, but the unique index makes retrying safe.
     for (let attempt = 0; attempt < 5; attempt++) {
       const referenceCode = generateReferenceCode();
@@ -122,7 +112,8 @@ export async function submitConsent(_prev: FormState, fd: FormData): Promise<For
 }
 
 export async function submitPrivacy(_prev: FormState, fd: FormData): Promise<FormState> {
-  if (isBot(fd)) return botSuccess;
+  const blocked = screen(fd);
+  if (blocked) return blocked;
   const parsed = privacySchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
 
@@ -147,7 +138,8 @@ export async function submitPrivacy(_prev: FormState, fd: FormData): Promise<For
 }
 
 export async function submitInterview(_prev: FormState, fd: FormData): Promise<FormState> {
-  if (isBot(fd)) return botSuccess;
+  const blocked = screen(fd);
+  if (blocked) return blocked;
   const parsed = interviewSchema.safeParse(readForm(fd, ["concerns"]));
   if (!parsed.success) return invalid(fd, parsed.error);
 
@@ -171,7 +163,8 @@ export async function submitInterview(_prev: FormState, fd: FormData): Promise<F
 }
 
 export async function submitAssessment(_prev: FormState, fd: FormData): Promise<FormState> {
-  if (isBot(fd)) return botSuccess;
+  const blocked = screen(fd);
+  if (blocked) return blocked;
   const parsed = assessmentSchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
 
@@ -201,7 +194,8 @@ export async function submitAssessment(_prev: FormState, fd: FormData): Promise<
 }
 
 export async function submitExit(_prev: FormState, fd: FormData): Promise<FormState> {
-  if (isBot(fd)) return botSuccess;
+  const blocked = screen(fd);
+  if (blocked) return blocked;
   const parsed = exitSchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
   const data = parsed.data;

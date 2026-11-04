@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const control =
   "w-full rounded-xl border bg-white px-4 text-base text-foreground placeholder:text-muted-foreground";
-const borderFor = (hasError: boolean) => (hasError ? "border-2 border-[#9b1c1c]" : "border-input");
+const borderFor = (hasError: boolean) => (hasError ? "border-2 border-error" : "border-input");
 
 function Hint({ id, children }: { id: string; children?: React.ReactNode }) {
   if (!children) return null;
@@ -20,7 +20,7 @@ function Hint({ id, children }: { id: string; children?: React.ReactNode }) {
 function FieldError({ id, errors }: { id: string; errors?: string[] }) {
   if (!errors?.length) return null;
   return (
-    <p id={id} className="font-medium text-[#9b1c1c]">
+    <p id={id} className="font-medium text-error">
       {errors[0]}
     </p>
   );
@@ -64,6 +64,9 @@ export function TextField({
         type={type}
         max={max}
         autoComplete={autoComplete}
+        // Typed identifiers: don't capitalise or "correct" them.
+        autoCapitalize={type === "email" ? "none" : undefined}
+        spellCheck={type === "email" ? false : undefined}
         defaultValue={asString(value)}
         aria-required={required}
         aria-invalid={hasError || undefined}
@@ -81,12 +84,14 @@ export function TextAreaField({
   hint,
   required,
   rows = 4,
+  maxLength,
 }: {
   name: string;
   label: string;
   hint?: React.ReactNode;
   required?: boolean;
   rows?: number;
+  maxLength?: number;
 }) {
   const { errors, value, hasError } = useFieldState(name);
   return (
@@ -100,6 +105,7 @@ export function TextAreaField({
         id={name}
         name={name}
         rows={rows}
+        maxLength={maxLength}
         defaultValue={asString(value)}
         aria-required={required}
         aria-invalid={hasError || undefined}
@@ -166,12 +172,15 @@ function Fieldset({
   legend,
   hint,
   required,
+  radio,
   children,
 }: {
   name: string;
   legend: string;
   hint?: React.ReactNode;
   required?: boolean;
+  // aria-invalid is only valid on a radiogroup, not on a plain group of checkboxes.
+  radio?: boolean;
   children: React.ReactNode;
 }) {
   const { errors, hasError } = useFieldState(name);
@@ -179,8 +188,9 @@ function Fieldset({
     <fieldset
       id={name}
       tabIndex={-1}
+      role={radio ? "radiogroup" : undefined}
       aria-describedby={describedBy(name, hint, hasError)}
-      aria-invalid={hasError || undefined}
+      aria-invalid={radio && hasError ? true : undefined}
       className="space-y-3"
     >
       <legend className="text-lg font-semibold">
@@ -195,7 +205,7 @@ function Fieldset({
 }
 
 const choiceRow = "flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-1 py-2";
-const choiceInput = "size-6 shrink-0 accent-[#1f2d26]";
+const choiceInput = "size-6 shrink-0 accent-night";
 
 export function RadioGroup({
   name,
@@ -215,7 +225,7 @@ export function RadioGroup({
   const { value } = useFieldState(name);
   const selected = asString(value);
   return (
-    <Fieldset name={name} legend={legend} hint={hint} required={required}>
+    <Fieldset name={name} legend={legend} hint={hint} required={required} radio>
       <div className={cn(inline ? "flex flex-wrap gap-x-6" : "space-y-1")}>
         {options.map((o) => (
           <label key={o.value} className={choiceRow}>
@@ -310,6 +320,7 @@ export function ScaleField({
     <fieldset
       id={name}
       tabIndex={-1}
+      role="radiogroup"
       aria-invalid={hasError || undefined}
       aria-describedby={hasError ? `${name}-error` : undefined}
       className="space-y-3"
@@ -319,14 +330,15 @@ export function ScaleField({
         {options.map((o) => (
           <label
             key={o.value}
-            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-input bg-white px-4 py-2 has-[:checked]:border-night has-[:checked]:bg-accent"
+            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-input bg-white px-4 py-2 has-[:checked]:border-night has-[:checked]:bg-accent has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring"
           >
+            {/* The whole card shows focus, so the small radio doesn't need its own ring. */}
             <input
               type="radio"
               name={name}
               value={o.value}
               defaultChecked={selected === o.value}
-              className="size-5 shrink-0 accent-[#1f2d26]"
+              className="size-5 shrink-0 accent-night focus-visible:outline-none"
             />
             <span>{o.label}</span>
           </label>

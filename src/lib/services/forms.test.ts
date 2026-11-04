@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assessmentItems, scoreAssessment } from "./assessment";
 import { generateReferenceCode, normalizeReferenceCode } from "./reference-code";
 import { ageOn, consentSchema, interviewSchema, sameName } from "../validation/forms";
+import { testimonySchema } from "../validation/testimony";
 
 describe("scoreAssessment", () => {
   const all = (n: number) => assessmentItems.map(() => n);
@@ -86,6 +87,60 @@ describe("interviewSchema dropdowns", () => {
 
   it("rejects an option that isn't in the list", () => {
     expect(interviewSchema.safeParse({ ...base, pronouns: "whatever" }).success).toBe(false);
+  });
+});
+
+describe("extreme input", () => {
+  const base = {
+    birthdate: "2000-01-15",
+    agreeVoluntary: "on",
+    agreeConfidentiality: "on",
+    agreeNotEmergency: "on",
+  };
+  const consent = (name: string, signature = name) => consentSchema.safeParse({ ...base, fullName: name, signature });
+
+  it("accepts names in other scripts, with emoji, and with surrounding spaces", () => {
+    for (const name of ["محمد علي", "李小龍", "Zoë Ñúñez-O'Brien", "Ana 🌙 Cruz", "  Maria Santos  "]) {
+      expect(consent(name).success, name).toBe(true);
+    }
+  });
+
+  it("rejects an absurdly long name instead of storing it", () => {
+    const result = consent("A".repeat(500));
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path[0] === "fullName")).toBe(true);
+  });
+
+  it("rejects whitespace-only and empty required fields", () => {
+    expect(consent("   ").success).toBe(false);
+    expect(consent("").success).toBe(false);
+  });
+
+  it("rejects malformed and unreal birthdates", () => {
+    for (const birthdate of ["not-a-date", "2000-13-45", "1800-01-01", "2999-01-01", "15/01/2000"]) {
+      expect(consentSchema.safeParse({ ...base, birthdate, fullName: "A B", signature: "A B" }).success, birthdate).toBe(false);
+    }
+  });
+});
+
+describe("testimonySchema", () => {
+  const valid = { content: "I felt heard and not judged.", agreePublic: "on" };
+
+  it("accepts a testimony with or without a name", () => {
+    expect(testimonySchema.safeParse(valid).success).toBe(true);
+    expect(testimonySchema.safeParse({ ...valid, displayName: "Maria" }).success).toBe(true);
+  });
+
+  it("requires permission, a real sentence, and a sane length", () => {
+    expect(testimonySchema.safeParse({ ...valid, agreePublic: undefined }).success).toBe(false);
+    expect(testimonySchema.safeParse({ ...valid, content: "Good." }).success).toBe(false);
+    expect(testimonySchema.safeParse({ ...valid, content: "x".repeat(601) }).success).toBe(false);
+    expect(testimonySchema.safeParse({ ...valid, displayName: "n".repeat(61) }).success).toBe(false);
+  });
+
+  it("keeps markup as plain text rather than interpreting it", () => {
+    const result = testimonySchema.safeParse({ ...valid, content: "<script>alert(1)</script> helped me" });
+    expect(result.success && result.data.content).toBe("<script>alert(1)</script> helped me");
   });
 });
 

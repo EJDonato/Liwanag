@@ -5,12 +5,42 @@ import { PageHeader } from "@/components/page-header";
 import { firstName, getProgress, missingStep, type StepKey } from "@/lib/services/clients";
 import { getReferenceCode } from "@/lib/session";
 import { formSteps } from "@/lib/site";
+import { cn } from "@/lib/utils";
+
+// Position in the journey, not stored progress, so it lives in the static shell. Sage is behind you,
+// sun with a dark rim is where you are (sun alone is 1.4:1 on cream), an outline is ahead.
+// Fill, rim and outline differ in shape too, so the state never depends on color alone.
+function StepProgress({ index }: { index: number }) {
+  return (
+    <ol aria-label="Form progress" className="mt-5 flex max-w-sm gap-2">
+      {formSteps.map((s, i) => {
+        const state = i < index ? "earlier" : i === index ? "current" : "later";
+        return (
+          <li key={s.href} aria-current={state === "current" ? "step" : undefined} className="flex-1">
+            <span
+              aria-hidden="true"
+              className={cn(
+                "block h-3 rounded-full border-2",
+                state === "earlier" && "border-sage bg-sage",
+                state === "current" && "border-night bg-sun",
+                state === "later" && "border-input",
+              )}
+            />
+            <span className="sr-only">
+              {s.name}, {state} step
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 function Notice({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-5 rounded-2xl bg-mist p-6 sm:p-8">
       <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
-      <div className="space-y-4 text-lg leading-relaxed">{children}</div>
+      <div className="space-y-4 text-lg leading-relaxed [overflow-wrap:anywhere]">{children}</div>
     </div>
   );
 }
@@ -83,7 +113,7 @@ async function Gate({ step, children }: { step: StepKey; children: React.ReactNo
   return (
     <>
       {progress && (
-        <p className="mb-8 text-muted-foreground">
+        <p className="mb-8 text-muted-foreground [overflow-wrap:anywhere]">
           Continuing as <strong className="text-foreground">{firstName(progress.fullName)}</strong> ·{" "}
           {progress.referenceCode}
         </p>
@@ -111,7 +141,8 @@ export function StepPage({
         <p className="text-base font-semibold text-foreground">
           Step {index + 1} of {formSteps.length}
         </p>
-        <p className="mt-2">{intro}</p>
+        <StepProgress index={index} />
+        <p className="mt-5">{intro}</p>
       </PageHeader>
       <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:py-16">
         <Suspense fallback={<p className="text-muted-foreground">Loading your form…</p>}>
