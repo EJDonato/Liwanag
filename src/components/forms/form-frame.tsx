@@ -2,12 +2,12 @@
 
 import { Check } from "lucide-react";
 import Link from "next/link";
-import { createContext, useActionState, useContext, useEffect, useRef, useState } from "react";
+import { Component, createContext, useActionState, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { ButtonLink } from "@/components/button-link";
 import { HONEYPOT_FIELD, OPENED_AT_FIELD } from "@/lib/forms/guard";
 import { echoValues } from "@/lib/forms/read";
-import { idleState, type FormState } from "@/lib/forms/state";
+import { idleState, type FormState, type FormValues } from "@/lib/forms/state";
 import { hotlines } from "@/lib/site";
 
 const FormStateContext = createContext<FormState>(idleState);
@@ -323,17 +323,7 @@ function Confirmation({
   );
 }
 
-export function FormFrame({
-  action,
-  submitLabel,
-  successTitle,
-  nextHref,
-  nextLabel,
-  backLink = true,
-  requireSavedCode = false,
-  celebrate = false,
-  children,
-}: {
+type FrameProps = {
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   submitLabel: string;
   successTitle?: string;
@@ -344,25 +334,77 @@ export function FormFrame({
   requireSavedCode?: boolean;
   // Final form: show the celebration instead of the usual confirmation.
   celebrate?: boolean;
+  // Pre-fill fields, for forms that edit something that already exists.
+  initialValues?: FormValues;
   children: React.ReactNode;
-}) {
-  // A dropped connection or a server fault would otherwise throw to the error page and lose
-  // everything typed. Forms that redirect on success (the resume form) skip this: their
-  // redirect travels as a signal that must not be caught.
-  const safeAction = async (prev: FormState, fd: FormData): Promise<FormState> => {
-    if (!successTitle) return action(prev, fd);
-    try {
-      return await action(prev, fd);
-    } catch {
-      return {
-        status: "error",
-        message:
-          "We could not reach the server, so nothing was saved. Your answers are still here: check your connection and press submit again.",
-        values: echoValues(fd),
-      };
+};
+
+const NETWORK_MESSAGE =
+  "We could not reach the server, so nothing was saved. Your answers are still here: check your connection and press submit again.";
+
+// Next's own signals (redirect, not-found) travel as errors with a digest like "NEXT_REDIRECT".
+// They are not failures and must reach Next untouched.
+function isNextSignal(error: unknown) {
+  const digest = (error as { digest?: unknown } | null)?.digest;
+  return typeof digest === "string" && digest.startsWith("NEXT_");
+}
+
+// A dropped connection or a server fault during submit makes React throw from the form action,
+// which would replace the whole page with the error screen and lose everything typed. This catches
+// it and remounts the form with the answers the person had entered and a clear message.
+class SubmissionBoundary extends Component<
+  { start: FormState; onFailure: () => FormState; render: (initial: FormState, attempt: number) => ReactNode },
+  { failed: boolean; caught: unknown; initial: FormState; attempt: number }
+> {
+  state = { failed: false, caught: null as unknown, initial: this.props.start, attempt: 0 };
+
+  static getDerivedStateFromError(error: unknown) {
+    return { failed: true, caught: error };
+  }
+
+  componentDidCatch(error: unknown) {
+    if (isNextSignal(error)) return; // render() hands it on
+    this.setState((s) => ({ failed: false, caught: null, initial: this.props.onFailure(), attempt: s.attempt + 1 }));
+  }
+
+  render() {
+    if (this.state.failed) {
+      if (isNextSignal(this.state.caught)) throw this.state.caught;
+      return null;
     }
-  };
-  const [state, formAction] = useActionState(safeAction, idleState);
+    return this.props.render(this.state.initial, this.state.attempt);
+  }
+}
+
+export function FormFrame(props: FrameProps) {
+  const submittedRef = useRef<FormValues>({});
+  return (
+    <SubmissionBoundary
+      start={props.initialValues ? { status: "idle", values: props.initialValues } : idleState}
+      onFailure={() => ({ status: "error", message: NETWORK_MESSAGE, values: submittedRef.current })}
+      render={(initial, attempt) => (
+        <FormFrameInner key={attempt} {...props} initial={initial} submittedRef={submittedRef} />
+      )}
+    />
+  );
+}
+
+function FormFrameInner({
+  action,
+  submitLabel,
+  successTitle,
+  nextHref,
+  nextLabel,
+  backLink = true,
+  requireSavedCode = false,
+  celebrate = false,
+  initial,
+  submittedRef,
+  children,
+}: FrameProps & { initial: FormState; submittedRef: React.RefObject<FormValues> }) {
+  // The plain server action goes straight to useActionState on purpose: React can then render the
+  // form so it still submits if JavaScript hasn't loaded yet (or never does).
+  const [state, formAction] = useActionState(action, initial);
   const openedAt = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (openedAt.current) openedAt.current.value = String(Date.now());
@@ -384,7 +426,15 @@ export function FormFrame({
   return (
     <FormStateContext value={state}>
       <ErrorSummary state={state} />
-      <form action={formAction} noValidate className="space-y-10">
+      <form
+        action={formAction}
+        noValidate
+        className="space-y-10"
+        // Remember what was typed, so a failed submission can put it back (see SubmissionBoundary).
+        onSubmit={(e) => {
+          submittedRef.current = echoValues(new FormData(e.currentTarget));
+        }}
+      >
         {successTitle && (
           <p className="text-muted-foreground">Every question is required unless it says optional.</p>
         )}

@@ -33,7 +33,8 @@ Success is a visitor who reaches out and finishes the form journey without frict
 ## Capabilities and Constraints
 
 - Built: Home, About, Services, Contact, and a forms hub with all five forms saved to a PostgreSQL database (Supabase in production, via Prisma 7). Next.js App Router with TypeScript, Tailwind and shadcn/ui.
-- Not yet built: testimonies page, contact message form, admin area with login, CSV export, rate limiting, and end-to-end tests.
+- Also built: the public Testimonies page with a moderated submit form, the Contact page message form, and the staff admin area at `/admin` (own layout; session cookie, 15-minute lockout after 5 wrong passwords). Staff can moderate and edit testimonies, search and read client submissions with safety-flagged check-ins called out, export CSV, and handle contact messages.
+- Not yet built: deleting a client's records on request (the privacy notice promises deletion rights), multiple staff accounts and roles, rate limiting on public forms, and automated end-to-end tests.
 - The assessment is a short self-report check-in scored 0-30 on the server. It is a conversation starter, not a diagnosis. Any non-zero answer to the safety question surfaces hotlines immediately.
 - Testimonies shown publicly must be approved by staff first; the Exit form can add a pending one with the visitor's permission.
 - Undecided: whether guardians are an audience of their own, whether a visitor may submit multiple assessments over time, and the final tagline, mission and vision.

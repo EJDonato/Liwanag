@@ -45,7 +45,7 @@ export function TextField({
   name: string;
   label: string;
   hint?: React.ReactNode;
-  type?: "text" | "email" | "tel" | "date";
+  type?: "text" | "email" | "tel" | "date" | "password";
   required?: boolean;
   autoComplete?: string;
   max?: string;

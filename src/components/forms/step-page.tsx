@@ -1,7 +1,8 @@
 import { Suspense } from "react";
-import { startOver } from "@/app/forms/actions";
+import { startOver } from "@/app/(site)/forms/actions";
 import { ButtonLink } from "@/components/button-link";
 import { PageHeader } from "@/components/page-header";
+import { FormSkeleton } from "@/components/public-skeletons";
 import { firstName, getProgress, missingStep, type StepKey } from "@/lib/services/clients";
 import { getReferenceCode } from "@/lib/session";
 import { formSteps } from "@/lib/site";
@@ -145,7 +146,7 @@ export function StepPage({
         <p className="mt-5">{intro}</p>
       </PageHeader>
       <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:py-16">
-        <Suspense fallback={<p className="text-muted-foreground">Loading your form…</p>}>
+        <Suspense fallback={<FormSkeleton />}>
           <Gate step={step}>{children}</Gate>
         </Suspense>
       </section>

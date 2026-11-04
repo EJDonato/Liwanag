@@ -106,8 +106,11 @@ model ContactMessage {
 }
 
 model Admin {
-  id           String @id @default(cuid())
-  username     String @unique
+  id           String    @id @default(cuid())
+  username     String    @unique
   passwordHash String
-  role         String @default("STAFF")
+  role         String    @default("STAFF")
+  // Sign-in lockout: 5 wrong passwords in a row lock the account for 15 minutes.
+  failedLogins Int       @default(0)
+  lockedUntil  DateTime?
 }

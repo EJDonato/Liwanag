@@ -59,6 +59,26 @@ npm run dev                   # http://localhost:3000
 | `npm run db:seed` | Seed the database |
 | `npm run db:studio` | Browse data in Prisma Studio |
 
+## Admin area
+
+Staff sign in at `/admin` (there is no link to it on the public site; bookmark it). It signs you in with the `ADMIN_USERNAME` and `ADMIN_PASSWORD` you set before running `npm run db:seed`. Re-run the seed to change the password.
+
+What staff can do once signed in:
+
+- **Dashboard:** what needs attention first (check-ins with a safety answer, testimonies waiting, unread messages).
+- **Testimonies:** approve, decline, take down or edit what visitors send. Nothing is public until approved.
+- **Submissions:** search clients by name or reference code, filter to safety-flagged check-ins, open a client to see all five forms, and download a CSV (it honours the search and filter).
+- **Messages:** read what came through the Contact page, mark read or unread, reply by email, delete.
+
+Session and sign-in details:
+
+- Sessions last 8 hours and live in an `httpOnly` cookie scoped to `/admin`.
+- Five wrong passwords in a row lock the account for 15 minutes.
+- Every admin page re-checks the session against the database (`src/lib/admin/dal.ts`); `src/proxy.ts` is only a quick redirect.
+- `AUTH_SECRET` must be a random value of 32 or more characters. Without it nobody can sign in.
+
+Sessions use a signed cookie built with `jose`, following the Next.js authentication guide, instead of the Auth.js package named in SYSTEM_DESIGN.md. `next-auth` is still installed but unused.
+
 ## Deployment
 
 See [SYSTEM_DESIGN.md](./SYSTEM_DESIGN.md) section 11 (Supabase + Vercel).

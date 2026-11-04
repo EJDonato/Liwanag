@@ -7,10 +7,10 @@ export function SiteFooter() {
     <footer className="on-night bg-night text-night-text">
       <div className="mx-auto grid max-w-6xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1.2fr]">
         <div>
-          <p className="flex items-center gap-2.5 font-heading text-xl font-semibold text-white">
+          <Link href="/" className="flex w-fit items-center gap-2.5 font-heading text-xl font-semibold text-white hover:text-sun">
             <LogoMark />
             {site.name}
-          </p>
+          </Link>
           <p className="mt-4 max-w-xs text-night-text">{site.tagline}</p>
           <p className="mt-6 max-w-sm text-sm leading-relaxed text-night-muted">{site.disclaimer}</p>
         </div>

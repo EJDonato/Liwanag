@@ -22,7 +22,8 @@ export function readForm(fd: FormData, multi: string[] = []) {
 export function echoValues(fd: FormData): FormValues {
   const values: FormValues = {};
   for (const key of new Set(fd.keys())) {
-    if (key.startsWith("$ACTION") || guardFields.includes(key)) continue;
+    // Never echo a password back, even to the browser that typed it.
+    if (key.startsWith("$ACTION") || key === "password" || guardFields.includes(key)) continue;
     const all = fd.getAll(key).filter((v): v is string => typeof v === "string");
     values[key] = all.length > 1 ? all : (all[0] ?? "");
   }
