@@ -170,7 +170,39 @@
   animation-delay: var(--rise-delay, 0s);
 }
 
+/* Celebration: points of light drift up and fade. Slow and soft, never flashing. */
+@keyframes mote-rise {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-22rem) scale(1);
+    opacity: 0;
+  }
+}
+
+.mote {
+  position: absolute;
+  bottom: -1rem;
+  left: var(--x);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 9999px;
+  background: var(--sun);
+  box-shadow: 0 0 1rem 0.2rem color-mix(in srgb, var(--sun) 45%, transparent);
+  animation: mote-rise var(--d) ease-out var(--delay) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .mote {
+    animation: none;
+    bottom: var(--y);
+    opacity: 0.5;
+  }
   .rise-in {
     animation: none;
   }
