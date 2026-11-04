@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import {
   Check,
   ChevronRight,
-  Download,
-  ExternalLink,
   MessageSquareText,
   Quote,
   TriangleAlert,
@@ -11,7 +9,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { linkButtonClass } from "@/components/admin/ui";
 import { verifyAdmin } from "@/lib/admin/dal";
 import { formatDate } from "@/lib/admin/format";
 import { getDashboardCounts, listClients, listMessages, listTestimonies } from "@/lib/admin/queries";
@@ -117,30 +114,6 @@ export default async function DashboardPage() {
         <StatCard href="/admin/testimonies" icon={Quote} label="Testimonies" count={c.pendingTestimonies} needs={c.pendingTestimonies > 0} needsText="Waiting for review" />
         <StatCard href="/admin/messages?show=unread" icon={MessageSquareText} label="Messages" count={c.unreadMessages} needs={c.unreadMessages > 0} needsText="Unread" />
         <StatCard href="/admin/submissions" icon={Users} label="Clients" count={c.clients} needs={false} needsText="" plain="Started the forms" />
-      </div>
-
-      <h2 className="mt-12 text-2xl font-semibold tracking-tight">Quick actions</h2>
-      <div className="mt-5 flex flex-wrap gap-3">
-        {c.flagged > 0 && (
-          <Link href="/admin/submissions?flag=safety" className={linkButtonClass("primary")}>
-            Open flagged check-ins
-          </Link>
-        )}
-        <Link href="/admin/testimonies" className={linkButtonClass(c.pendingTestimonies > 0 && c.flagged === 0 ? "primary" : "outline")}>
-          Review testimonies
-        </Link>
-        <Link href="/admin/messages?show=unread" className={linkButtonClass()}>
-          Read messages
-        </Link>
-        <Link href="/admin/submissions/export" prefetch={false} className={cn(linkButtonClass(), "gap-2")}>
-          <Download aria-hidden="true" className="size-4" />
-          Download submissions (CSV)
-        </Link>
-        <a href="/" target="_blank" rel="noopener" className={cn(linkButtonClass(), "gap-2")}>
-          View the public site
-          <ExternalLink aria-hidden="true" className="size-4" />
-          <span className="sr-only">(opens in a new tab)</span>
-        </a>
       </div>
 
       <div className="mt-14 grid gap-12 lg:grid-cols-2 lg:gap-16">
