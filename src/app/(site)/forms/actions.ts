@@ -3,7 +3,7 @@
 import { redirect, unstable_rethrow } from "next/navigation";
 import { db } from "@/lib/db";
 import { readForm } from "@/lib/forms/read";
-import { fail, invalid, screen } from "@/lib/forms/respond";
+import { fail, guard, invalid, throttle } from "@/lib/forms/respond";
 import type { FormState } from "@/lib/forms/state";
 import { assessmentItems, bandMessages, scoreAssessment } from "@/lib/services/assessment";
 import { getProgress, missingStep, type Progress, type StepKey } from "@/lib/services/clients";
@@ -66,7 +66,7 @@ function isFormState(value: Progress | FormState): value is FormState {
 }
 
 export async function submitConsent(_prev: FormState, fd: FormData): Promise<FormState> {
-  const blocked = screen(fd);
+  const blocked = await guard(fd, "consent");
   if (blocked) return blocked;
   const parsed = consentSchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
@@ -112,7 +112,7 @@ export async function submitConsent(_prev: FormState, fd: FormData): Promise<For
 }
 
 export async function submitPrivacy(_prev: FormState, fd: FormData): Promise<FormState> {
-  const blocked = screen(fd);
+  const blocked = await guard(fd, "form");
   if (blocked) return blocked;
   const parsed = privacySchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
@@ -138,7 +138,7 @@ export async function submitPrivacy(_prev: FormState, fd: FormData): Promise<For
 }
 
 export async function submitInterview(_prev: FormState, fd: FormData): Promise<FormState> {
-  const blocked = screen(fd);
+  const blocked = await guard(fd, "form");
   if (blocked) return blocked;
   const parsed = interviewSchema.safeParse(readForm(fd, ["concerns"]));
   if (!parsed.success) return invalid(fd, parsed.error);
@@ -163,7 +163,7 @@ export async function submitInterview(_prev: FormState, fd: FormData): Promise<F
 }
 
 export async function submitAssessment(_prev: FormState, fd: FormData): Promise<FormState> {
-  const blocked = screen(fd);
+  const blocked = await guard(fd, "form");
   if (blocked) return blocked;
   const parsed = assessmentSchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
@@ -194,7 +194,7 @@ export async function submitAssessment(_prev: FormState, fd: FormData): Promise<
 }
 
 export async function submitExit(_prev: FormState, fd: FormData): Promise<FormState> {
-  const blocked = screen(fd);
+  const blocked = await guard(fd, "form");
   if (blocked) return blocked;
   const parsed = exitSchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
@@ -241,6 +241,8 @@ export async function submitExit(_prev: FormState, fd: FormData): Promise<FormSt
 }
 
 export async function resumeWithCode(_prev: FormState, fd: FormData): Promise<FormState> {
+  const limited = await throttle(fd, "resume");
+  if (limited) return limited;
   const parsed = resumeSchema.safeParse(readForm(fd));
   if (!parsed.success) return invalid(fd, parsed.error);
 

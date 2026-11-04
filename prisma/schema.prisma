@@ -114,3 +114,11 @@ model Admin {
   failedLogins Int       @default(0)
   lockedUntil  DateTime?
 }
+
+// Counts requests per visitor per time window, to slow down floods on the public forms.
+// "key" is "<bucket>:<hashed address>"; the address itself is never stored.
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+}

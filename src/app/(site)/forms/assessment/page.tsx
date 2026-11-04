@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { submitAssessment } from "@/app/(site)/forms/actions";
 import { FormSection, ScaleField, TextAreaField } from "@/components/forms/fields";
 import { FormFrame } from "@/components/forms/form-frame";
+import { HelpNow } from "@/components/forms/help-now";
 import { StepPage } from "@/components/forms/step-page";
 import { assessmentItems, assessmentScale } from "@/lib/services/assessment";
 
@@ -19,6 +20,8 @@ export default function AssessmentPage() {
       title="Assessment form"
       intro="A short check-in on how you have been feeling. It is a starting point for a conversation, not a diagnosis."
     >
+      <HelpNow />
+
       <FormFrame
         action={submitAssessment}
         submitLabel="Submit check-in"

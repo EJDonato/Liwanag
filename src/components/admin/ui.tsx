@@ -1,36 +1,13 @@
 import Link from "next/link";
+import { buttonClass, type Tone } from "@/components/admin/button-styles";
 import { cn } from "@/lib/utils";
 
-const tones = {
-  primary: "bg-night text-white hover:bg-night-2",
-  outline: "border border-input bg-white text-foreground hover:bg-mist",
-  danger: "border border-error bg-white text-error hover:bg-mist",
-} as const;
+// ActionButton is a client component (it announces results and manages focus); re-exported so
+// pages keep importing the admin pieces from one place.
+export { ActionButton } from "@/components/admin/action-button";
 
-const buttonBase =
-  "inline-flex min-h-11 items-center justify-center rounded-full px-5 font-semibold transition-colors";
-
-// A one-button form around a (usually bound) Server Action. Works without JavaScript.
-export function ActionButton({
-  action,
-  tone = "outline",
-  children,
-}: {
-  action: () => Promise<void>;
-  tone?: keyof typeof tones;
-  children: React.ReactNode;
-}) {
-  return (
-    <form action={action}>
-      <button type="submit" className={cn(buttonBase, tones[tone])}>
-        {children}
-      </button>
-    </form>
-  );
-}
-
-export function linkButtonClass(tone: keyof typeof tones = "outline") {
-  return cn(buttonBase, tones[tone]);
+export function linkButtonClass(tone: Tone = "outline") {
+  return buttonClass(tone);
 }
 
 export function PageTitle({ title, children }: { title: string; children?: React.ReactNode }) {

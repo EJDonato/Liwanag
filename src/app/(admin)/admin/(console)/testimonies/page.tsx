@@ -42,9 +42,9 @@ export default async function TestimoniesAdminPage({ searchParams }: PageProps<"
       />
 
       {items.length === 0 ? (
-        <p className="mt-10 max-w-xl text-lg text-muted-foreground">{emptyText[tab.key]}</p>
+        <p id="admin-results" tabIndex={-1} className="mt-10 max-w-xl text-lg text-muted-foreground outline-none">{emptyText[tab.key]}</p>
       ) : (
-        <ul className="mt-6 divide-y divide-border border-y border-border">
+        <ul id="admin-results" tabIndex={-1} aria-label="Testimonies" className="mt-6 divide-y divide-border border-y border-border outline-none">
           {items.map((t) => (
             <li key={t.id} className="py-6">
               <div className="grid gap-5 md:grid-cols-[1fr_auto] md:gap-10">
@@ -57,17 +57,17 @@ export default async function TestimoniesAdminPage({ searchParams }: PageProps<"
                 <div className="flex flex-wrap content-start gap-2 md:justify-end">
                   {tab.key === "pending" && (
                     <>
-                      <ActionButton action={approveTestimony.bind(null, t.id)} tone="primary">
+                      <ActionButton action={approveTestimony.bind(null, t.id)} doneMessage="Testimony approved. It is now on the site." tone="primary">
                         Approve
                       </ActionButton>
-                      <ActionButton action={rejectTestimony.bind(null, t.id)}>Decline</ActionButton>
+                      <ActionButton action={rejectTestimony.bind(null, t.id)} doneMessage="Testimony declined.">Decline</ActionButton>
                     </>
                   )}
                   {tab.key === "approved" && (
-                    <ActionButton action={restoreTestimony.bind(null, t.id)}>Take off the site</ActionButton>
+                    <ActionButton action={restoreTestimony.bind(null, t.id)} doneMessage="Taken off the site and moved back to waiting.">Take off the site</ActionButton>
                   )}
                   {tab.key === "rejected" && (
-                    <ActionButton action={restoreTestimony.bind(null, t.id)}>Move back to waiting</ActionButton>
+                    <ActionButton action={restoreTestimony.bind(null, t.id)} doneMessage="Moved back to waiting.">Move back to waiting</ActionButton>
                   )}
                   <Link href={`/admin/testimonies/${t.id}`} className={linkButtonClass()}>
                     Edit

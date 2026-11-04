@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HotlineLink } from "@/components/hotline-link";
 import { LogoMark } from "@/components/logo-mark";
 import { contact, hotlines, nav, site } from "@/lib/site";
 
@@ -35,7 +36,14 @@ export function SiteFooter() {
               <li key={h.name}>
                 <span className="text-white">{h.name}</span>
                 <br />
-                <span className="text-sun">{h.numbers.join(" · ")}</span>
+                <span className="text-sun">
+                  {h.numbers.map((n, i) => (
+                    <span key={n}>
+                      {i > 0 && " · "}
+                      <HotlineLink number={n} className="py-1" />
+                    </span>
+                  ))}
+                </span>
               </li>
             ))}
           </ul>

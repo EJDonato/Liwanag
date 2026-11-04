@@ -3,12 +3,12 @@
 import { unstable_rethrow } from "next/navigation";
 import { db } from "@/lib/db";
 import { readForm } from "@/lib/forms/read";
-import { fail, invalid, screen } from "@/lib/forms/respond";
+import { fail, guard, invalid } from "@/lib/forms/respond";
 import type { FormState } from "@/lib/forms/state";
 import { contactSchema } from "@/lib/validation/contact";
 
 export async function submitContactMessage(_prev: FormState, fd: FormData): Promise<FormState> {
-  const blocked = screen(fd);
+  const blocked = await guard(fd, "contact");
   if (blocked) return blocked;
 
   const parsed = contactSchema.safeParse(readForm(fd));

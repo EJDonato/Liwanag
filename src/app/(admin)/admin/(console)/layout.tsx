@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { signOut } from "@/app/(admin)/admin/actions";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { ConsoleChromeSkeleton } from "@/components/admin/skeletons";
+import { StatusRegion } from "@/components/admin/status";
 import { LogoMark } from "@/components/logo-mark";
 import { verifyAdmin } from "@/lib/admin/dal";
 import { getNavCounts } from "@/lib/admin/queries";
@@ -50,6 +51,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
       >
         Skip to content
       </a>
+      <StatusRegion />
       <Suspense fallback={<ConsoleChromeSkeleton />}>
         <ConsoleChrome />
       </Suspense>

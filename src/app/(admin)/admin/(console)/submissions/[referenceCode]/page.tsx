@@ -2,12 +2,17 @@ import type { Metadata } from "next";
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { linkButtonClass } from "@/components/admin/ui";
+import { TextField } from "@/components/forms/fields";
+import { FormFrame } from "@/components/forms/form-frame";
 import { verifyAdmin } from "@/lib/admin/dal";
 import { formatBirthdate, formatDateTime, renderClock } from "@/lib/admin/format";
 import { getClientDetail, readAssessment } from "@/lib/admin/queries";
 import { assessmentItems, assessmentScale, safetyItemIndex } from "@/lib/services/assessment";
 import { normalizeReferenceCode } from "@/lib/services/reference-code";
+import { cn } from "@/lib/utils";
 import { ageOn, contactOptions, exitRatings, historyOptions } from "@/lib/validation/forms";
+import { deleteClient } from "../actions";
 
 export const metadata: Metadata = { title: "Submission" };
 
@@ -168,6 +173,28 @@ export default async function SubmissionDetailPage({ params }: PageProps<"/admin
             <Fact label="Agreed to share as a testimony">{client.exit?.allowTestimony ? "Yes (it is in the testimony queue)" : "No"}</Fact>
           </Facts>
         </Section>
+
+        <section className="border-t border-border py-8">
+          <details>
+            <summary className={cn(linkButtonClass("danger"), "cursor-pointer list-none")}>Delete this client&apos;s records…</summary>
+            <div className="mt-6 max-w-xl rounded-2xl border border-error bg-white p-6">
+              <p className="text-lg leading-snug">
+                This permanently deletes {client.fullName}&apos;s consent, privacy, interview, assessment and exit forms. It cannot
+                be undone. Use it when someone asks for their information to be erased.
+              </p>
+              <p className="mt-3 text-muted-foreground">
+                A testimony they agreed to share is not linked to them, so it stays in the testimonies list. Remove it there too if
+                they asked for that.
+              </p>
+              <div className="mt-6">
+                <FormFrame action={deleteClient} submitLabel="Delete everything for this client" backLink={false}>
+                  <input type="hidden" name="referenceCode" value={client.referenceCode} />
+                  <TextField name="confirm" label={`Type ${client.referenceCode} to confirm`} required autoComplete="off" />
+                </FormFrame>
+              </div>
+            </div>
+          </details>
+        </section>
       </div>
     </div>
   );

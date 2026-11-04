@@ -3,12 +3,12 @@
 import { unstable_rethrow } from "next/navigation";
 import { db } from "@/lib/db";
 import { readForm } from "@/lib/forms/read";
-import { fail, invalid, screen } from "@/lib/forms/respond";
+import { fail, guard, invalid } from "@/lib/forms/respond";
 import type { FormState } from "@/lib/forms/state";
 import { testimonySchema } from "@/lib/validation/testimony";
 
 export async function submitTestimony(_prev: FormState, fd: FormData): Promise<FormState> {
-  const blocked = screen(fd);
+  const blocked = await guard(fd, "testimony");
   if (blocked) return blocked;
 
   const parsed = testimonySchema.safeParse(readForm(fd));

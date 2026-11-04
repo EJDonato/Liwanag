@@ -8,6 +8,7 @@ import { DECOY_HASH } from "@/lib/admin/constants";
 import { isLocked, lockUntil, shouldLock } from "@/lib/admin/lockout";
 import { createAdminSession, deleteAdminSession } from "@/lib/admin/session";
 import { isBot } from "@/lib/forms/guard";
+import { tooManyRequests } from "@/lib/rate-limit";
 import type { FormState } from "@/lib/forms/state";
 import { loginSchema } from "@/lib/validation/admin";
 
@@ -29,6 +30,9 @@ function failed(fd: FormData, message: string = SIGN_IN_FAILED, fieldErrors?: Re
 
 export async function signIn(_prev: FormState, fd: FormData): Promise<FormState> {
   if (isBot(fd)) return failed(fd);
+  if (await tooManyRequests("login")) {
+    return failed(fd, "Too many sign-in attempts. Please wait a few minutes and try again.");
+  }
 
   const parsed = loginSchema.safeParse({ username: fd.get("username"), password: fd.get("password") });
   if (!parsed.success) {

@@ -3,14 +3,31 @@
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogoMark } from "@/components/logo-mark";
 import { nav, site } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  // The mobile menu is open only on the page it was opened from. Any navigation, including the
+  // browser's Back button, changes the pathname and so closes it, with no effect needed.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const toggleRef = useRef<HTMLButtonElement>(null);
+
+  // Escape closes the menu and hands focus back to the button that opened it.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenOn(null);
+        toggleRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
@@ -21,7 +38,7 @@ export function SiteHeader() {
         <Link
           href="/"
           className="flex items-center gap-2 font-heading text-xl font-semibold tracking-tight"
-          onClick={() => setOpen(false)}
+          onClick={() => setOpenOn(null)}
         >
           <LogoMark />
           {site.name}
@@ -35,7 +52,7 @@ export function SiteHeader() {
                   href={item.href}
                   aria-current={isActive(item.href) ? "page" : undefined}
                   className={cn(
-                    "rounded-full px-4 py-2 text-[0.95rem] transition-colors hover:bg-muted",
+                    "inline-flex min-h-11 items-center rounded-full px-4 text-[0.95rem] transition-colors hover:bg-muted",
                     isActive(item.href) ? "bg-sun-soft font-semibold text-night" : "text-foreground",
                   )}
                 >
@@ -47,12 +64,13 @@ export function SiteHeader() {
         </nav>
 
         <button
+          ref={toggleRef}
           type="button"
           className="-mr-2 inline-flex size-11 items-center justify-center rounded-full hover:bg-muted md:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpenOn(open ? null : pathname)}
         >
           {open ? <X className="size-6" /> : <Menu className="size-6" />}
         </button>
@@ -70,7 +88,7 @@ export function SiteHeader() {
                 <Link
                   href={item.href}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  onClick={() => setOpen(false)}
+                  onClick={() => setOpenOn(null)}
                   className={cn(
                     "block border-b border-border py-4 font-heading text-2xl",
                     isActive(item.href) ? "font-semibold text-night underline decoration-sun decoration-4 underline-offset-8" : "text-foreground",

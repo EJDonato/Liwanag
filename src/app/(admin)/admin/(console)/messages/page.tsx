@@ -28,11 +28,11 @@ export default async function MessagesPage({ searchParams }: PageProps<"/admin/m
       />
 
       {messages.length === 0 ? (
-        <p className="mt-10 max-w-xl text-lg text-muted-foreground">
+        <p id="admin-results" tabIndex={-1} className="mt-10 max-w-xl text-lg text-muted-foreground outline-none">
           {unreadOnly ? "No unread messages. You're all caught up." : "No messages yet. They appear here when someone uses the form on the Contact page."}
         </p>
       ) : (
-        <ul className="mt-6 divide-y divide-border border-y border-border">
+        <ul id="admin-results" tabIndex={-1} aria-label="Messages" className="mt-6 divide-y divide-border border-y border-border outline-none">
           {messages.map((m) => (
             <li key={m.id} className="py-3">
               <div className={cn("-mx-3 rounded-xl px-3 py-4", !m.isRead && "bg-accent")}>
@@ -56,7 +56,7 @@ export default async function MessagesPage({ searchParams }: PageProps<"/admin/m
                     >
                       Reply by email
                     </a>
-                    <ActionButton action={setMessageRead.bind(null, m.id, !m.isRead)}>
+                    <ActionButton action={setMessageRead.bind(null, m.id, !m.isRead)} doneMessage={m.isRead ? "Marked as unread." : "Marked as read."}>
                       {m.isRead ? "Mark as unread" : "Mark as read"}
                     </ActionButton>
                     <details className="w-full md:text-right">
@@ -64,7 +64,7 @@ export default async function MessagesPage({ searchParams }: PageProps<"/admin/m
                       <div className="mt-2 rounded-xl border border-error bg-white p-4 text-left">
                         <p>Delete this message for good? This cannot be undone.</p>
                         <div className="mt-3">
-                          <ActionButton action={deleteMessage.bind(null, m.id)} tone="danger">
+                          <ActionButton action={deleteMessage.bind(null, m.id)} doneMessage="Message deleted." tone="danger">
                             Yes, delete it
                           </ActionButton>
                         </div>

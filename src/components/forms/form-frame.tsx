@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Component, createContext, useActionState, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { ButtonLink } from "@/components/button-link";
+import { HotlineLink } from "@/components/hotline-link";
 import { HONEYPOT_FIELD, OPENED_AT_FIELD } from "@/lib/forms/guard";
 import { echoValues } from "@/lib/forms/read";
 import { idleState, type FormState, type FormValues } from "@/lib/forms/state";
@@ -151,7 +152,14 @@ function CrisisPanel() {
         {hotlines.map((h) => (
           <li key={h.name}>
             <span className="font-semibold">{h.name}:</span>{" "}
-            <span className="text-sun">{h.numbers.join(" · ")}</span>
+            <span className="text-sun">
+              {h.numbers.map((n, i) => (
+                <span key={n}>
+                  {i > 0 && " · "}
+                  <HotlineLink number={n} className="py-1" />
+                </span>
+              ))}
+            </span>
           </li>
         ))}
       </ul>

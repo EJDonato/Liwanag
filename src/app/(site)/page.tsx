@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonLink } from "@/components/button-link";
+import { HotlineLink } from "@/components/hotline-link";
 import { formSteps, hotlines, featuredTestimony, services, site } from "@/lib/site";
 
 export default function Home() {
@@ -51,7 +52,7 @@ export default function Home() {
         <div className="on-night bg-night">
           <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-night-text sm:px-6">
             <span className="font-semibold text-white">Need someone right now?</span>{" "}
-            {hotlines[0].name}: <span className="text-sun">{hotlines[0].numbers[0]}</span>.{" "}
+            {hotlines[0].name}: <HotlineLink number={hotlines[0].numbers[0]} className="text-sun hover:text-white" />.{" "}
             <Link href="/contact" className="underline underline-offset-4 hover:text-sun">
               More hotlines
             </Link>
