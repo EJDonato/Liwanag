@@ -23,7 +23,7 @@ function StepProgress({ index }: { index: number }) {
               className={cn(
                 "block h-3 rounded-full border-2",
                 state === "earlier" && "border-sage bg-sage",
-                state === "current" && "border-night bg-sun",
+                state === "current" && "border-night bg-sun grow-x",
                 state === "later" && "border-input",
               )}
             />

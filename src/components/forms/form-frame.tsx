@@ -47,7 +47,7 @@ function ErrorSummary({ state }: { state: FormState }) {
       ref={ref}
       tabIndex={-1}
       role="alert"
-      className="mb-8 rounded-2xl border-2 border-error bg-white p-5"
+      className="mb-8 rounded-2xl border-2 border-error bg-white p-5 alert-in"
     >
       <p className="font-semibold text-error">{state.message ?? "Something needs your attention."}</p>
       {entries.length > 0 && (
@@ -286,7 +286,7 @@ function Confirmation({
       <div className="flex items-start gap-4">
         <span
           aria-hidden="true"
-          className="mt-1 flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-white"
+          className="mt-1 flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-white pop"
         >
           <Check className="size-6" strokeWidth={2.5} />
         </span>

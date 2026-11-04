@@ -38,7 +38,7 @@ export function StatusRegion() {
   return (
     <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
       {message && (
-        <p className="pointer-events-auto rounded-full bg-night px-6 py-3 font-semibold text-white shadow-lg">{message}</p>
+        <p className="pointer-events-auto rounded-full bg-night px-6 py-3 font-semibold text-white shadow-lg toast-life">{message}</p>
       )}
     </div>
   );

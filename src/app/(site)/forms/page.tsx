@@ -69,7 +69,7 @@ async function FormsHub() {
               </>
             );
             return (
-              <li key={step.href}>
+              <li key={step.href} className="rise-in" style={{ "--rise-delay": `${i * 0.06}s`, animationDuration: "0.45s" } as React.CSSProperties}>
                 {locked ? (
                   <div className="flex gap-5 rounded-2xl py-4 pr-4">{body}</div>
                 ) : (

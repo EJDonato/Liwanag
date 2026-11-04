@@ -80,7 +80,7 @@ export function SiteHeader() {
         <nav
           id="mobile-nav"
           aria-label="Main"
-          className="absolute inset-x-0 top-16 border-t border-border bg-background px-4 pb-6 pt-2 md:hidden"
+          className="absolute inset-x-0 top-16 border-t border-border bg-background px-4 pb-6 pt-2 md:hidden menu-in"
         >
           <ul>
             {nav.map((item) => (
