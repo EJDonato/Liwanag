@@ -85,8 +85,8 @@ export const formSteps = [
 
 // PLACEHOLDER: replace with the clinic's real contact details
 export const contact = {
-  email: "hello@liwanag.example",
-  phone: "(000) 000-0000",
+  email: "liwanagclinic@gmail.com",
+  phone: "09813932987",
   address: "Student Wellness Room, Main Building",
   hours: "Monday to Friday, 9:00 AM to 4:00 PM",
 } as const;
