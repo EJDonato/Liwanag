@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import { TextAreaField, TextField } from "@/components/forms/fields";
+import { FormFrame } from "@/components/forms/form-frame";
 import { PageHeader } from "@/components/page-header";
 import { contact, hotlines } from "@/lib/site";
+import { MESSAGE_MAX, MESSAGE_MIN } from "@/lib/validation/contact";
+import { submitContactMessage } from "./actions";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -76,6 +80,47 @@ export default function ContactPage() {
           Liwanag is not a substitute for professional care. In an emergency, contact local
           emergency services or one of the hotlines above.
         </p>
+      </section>
+
+      <section className="bg-mist">
+        <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1.3fr] lg:gap-20 lg:py-24">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Send us a message</h2>
+            <p className="mt-4 max-w-md text-lg text-muted-foreground">
+              For questions about our services or how to begin. We read messages during office hours:{" "}
+              {contact.hours.toLowerCase()}.
+            </p>
+            <p className="mt-4 max-w-md text-muted-foreground">
+              If it cannot wait, please call a hotline above. A message is not read the moment it is sent.
+            </p>
+          </div>
+          <FormFrame
+            action={submitContactMessage}
+            submitLabel="Send message"
+            successTitle="Message sent."
+            nextHref="/"
+            nextLabel="Back to home"
+            backLink={false}
+          >
+            <TextField name="name" label="Your name" required autoComplete="name" />
+            <TextField
+              name="email"
+              label="Email"
+              type="email"
+              required
+              autoComplete="email"
+              hint="Where we should reply."
+            />
+            <TextAreaField
+              name="message"
+              label="Your message"
+              required
+              rows={6}
+              maxLength={MESSAGE_MAX}
+              hint={`${MESSAGE_MIN} to ${MESSAGE_MAX} characters.`}
+            />
+          </FormFrame>
+        </div>
       </section>
     </>
   );

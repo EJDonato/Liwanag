@@ -106,8 +106,19 @@ model ContactMessage {
 }
 
 model Admin {
-  id           String @id @default(cuid())
-  username     String @unique
+  id           String    @id @default(cuid())
+  username     String    @unique
   passwordHash String
-  role         String @default("STAFF")
+  role         String    @default("STAFF")
+  // Sign-in lockout: 5 wrong passwords in a row lock the account for 15 minutes.
+  failedLogins Int       @default(0)
+  lockedUntil  DateTime?
+}
+
+// Counts requests per visitor per time window, to slow down floods on the public forms.
+// "key" is "<bucket>:<hashed address>"; the address itself is never stored.
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
 }

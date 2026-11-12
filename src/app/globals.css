@@ -9,6 +9,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-bricolage), var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --color-error: var(--error);
+  --color-success: var(--success);
   --color-night: var(--night);
   --color-night-2: var(--night-2);
   --color-sun: var(--sun);
@@ -96,6 +98,11 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
+  /* form errors: 8.2:1 on white, so it works as text and as a border */
+  --error: #9b1c1c;
+  /* done and saved: the logo's hills, deepened to 7.5:1 on cream so it works as text and as a fill */
+  --success: #3b5a3d;
+
   /* dark bands: deep forest */
   --night: #1f2d26;
   --night-2: #2c4034;
@@ -155,6 +162,12 @@
   }
 }
 
+/* Inner-page header: the logo's sunrise warming one corner of the sage ground. Text stays >= 4.8:1. */
+.dawn {
+  background-color: var(--mist);
+  background-image: radial-gradient(52rem 24rem at 90% -35%, var(--sun-soft) 0%, transparent 72%);
+}
+
 /* Transform only: text is fully visible even if the animation never runs. */
 @keyframes rise-in {
   from {
@@ -170,11 +183,174 @@
   animation-delay: var(--rise-delay, 0s);
 }
 
+/*
+  Celebration: points of light drift up and fade, once. Every mote finishes inside five seconds
+  (delay + duration), so nothing keeps moving while someone reads or copies their code (WCAG 2.2.2).
+  The glow is part of the dot's own gradient, not a shadow.
+*/
+@keyframes mote-rise {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-20rem) scale(1);
+    opacity: 0;
+  }
+}
+
+.mote {
+  position: absolute;
+  bottom: -1rem;
+  left: var(--x);
+  width: calc(var(--s) * 3);
+  height: calc(var(--s) * 3);
+  border-radius: 9999px;
+  background: radial-gradient(circle, var(--sun) 0 22%, color-mix(in srgb, var(--sun) 35%, transparent) 40%, transparent 70%);
+  animation: mote-rise var(--d) cubic-bezier(0.16, 1, 0.3, 1) var(--delay) 1 both;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .mote {
+    animation: none;
+    bottom: var(--y);
+    opacity: 0.5;
+  }
   .rise-in {
     animation: none;
   }
   html {
     scroll-behavior: auto;
+  }
+}
+
+/*
+  Motion. One authored moment (the sunrise on the home page), plus quick feedback for state changes.
+  Everything animates transform and opacity only, and the element's normal style is its finished,
+  visible state, so nothing stays hidden if an animation never runs.
+*/
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The logo is a sun rising over hills: the hero's glow does the same, once, slowly. */
+@keyframes sunrise {
+  from {
+    transform: translateY(7rem);
+    opacity: 0;
+  }
+}
+.sunrise {
+  animation: sunrise 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+}
+
+/* A menu or message arriving. Fast, so it never feels like waiting. */
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}
+.menu-in {
+  animation: menu-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes alert-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.375rem);
+  }
+}
+.alert-in {
+  animation: alert-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* A saved form: the badge settles in and its tick draws itself, so the save is unmistakable. */
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+}
+.pop {
+  animation: pop 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.pop svg path {
+  stroke-dasharray: 24;
+  animation: draw 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s backwards;
+}
+
+/* The current step's bar fills from the left: where you are, arriving. */
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+.grow-x {
+  transform-origin: left center;
+  animation: grow-x 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+}
+
+/* The staff confirmation toast: slides up, stays 5s, fades out. The page removes it at 5s. */
+@keyframes toast-life {
+  0% {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  4% {
+    opacity: 1;
+    transform: none;
+  }
+  94% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+}
+@keyframes toast-fade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.toast-life {
+  animation: toast-life 5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Reduced motion: no movement at all, but feedback still arrives as a quick fade. */
+@media (prefers-reduced-motion: reduce) {
+  .sunrise,
+  .grow-x {
+    animation: none;
+  }
+  .menu-in,
+  .alert-in,
+  .pop {
+    animation: fade 0.15s linear;
+  }
+  .pop svg path {
+    animation: none;
+  }
+  .toast-life {
+    animation: toast-fade 5s linear both;
   }
 }

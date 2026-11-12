@@ -1,19 +1,9 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { bricolage, figtree } from "@/lib/fonts";
 import { site } from "@/lib/site";
-import "./globals.css";
-
-const figtree = Figtree({
-  variable: "--font-figtree",
-  subsets: ["latin"],
-});
-
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
-  subsets: ["latin"],
-});
+import "../globals.css";
 
 export const metadata: Metadata = {
   title: { default: `${site.name}: ${site.tagline}`, template: `%s | ${site.name}` },
@@ -21,7 +11,8 @@ export const metadata: Metadata = {
     "Liwanag is a mental health clinic offering counseling, group support and workshops. Learn about our services, complete our intake forms online, and find who to contact.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// The public site. The admin area has its own root layout (see src/app/(admin)).
+export default function SiteLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" style={{ colorScheme: "light" }} className={`${figtree.variable} ${bricolage.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">

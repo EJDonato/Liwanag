@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonLink } from "@/components/button-link";
+import { HotlineLink } from "@/components/hotline-link";
 import { formSteps, hotlines, featuredTestimony, services, site } from "@/lib/site";
 
 export default function Home() {
@@ -18,7 +19,7 @@ export default function Home() {
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-24 right-[-6rem] -z-10 size-[26rem] rounded-full bg-[radial-gradient(circle,var(--sun-deep)_0%,var(--sun-soft)_42%,transparent_70%)] sm:right-[6%] sm:top-12 sm:size-[32rem]"
+          className="pointer-events-none absolute -top-24 right-[-6rem] -z-10 size-[26rem] rounded-full bg-[radial-gradient(circle,var(--sun-deep)_0%,var(--sun-soft)_42%,transparent_70%)] sm:right-[6%] sm:top-12 sm:size-[32rem] sunrise"
         />
 
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-4 py-16 sm:px-6 lg:py-20">
@@ -51,7 +52,7 @@ export default function Home() {
         <div className="on-night bg-night">
           <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-night-text sm:px-6">
             <span className="font-semibold text-white">Need someone right now?</span>{" "}
-            {hotlines[0].name}: <span className="text-sun">{hotlines[0].numbers[0]}</span>.{" "}
+            {hotlines[0].name}: <HotlineLink number={hotlines[0].numbers[0]} className="text-sun hover:text-white" />.{" "}
             <Link href="/contact" className="underline underline-offset-4 hover:text-sun">
               More hotlines
             </Link>
@@ -93,10 +94,7 @@ export default function Home() {
             />
             {formSteps.map((step, i) => (
               <li key={step.href} className="relative">
-                <Link
-                  href={step.href}
-                  className="group flex gap-5 rounded-2xl py-4 pr-4 transition-colors hover:bg-background"
-                >
+                <div className="flex gap-5 py-4 pr-4">
                   <span
                     aria-hidden="true"
                     className="relative z-10 mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-night font-heading text-base font-semibold text-sun"
@@ -107,7 +105,7 @@ export default function Home() {
                     <span className="block font-heading text-xl font-semibold">{step.name}</span>
                     <span className="mt-1 block text-muted-foreground">{step.text}</span>
                   </span>
-                </Link>
+                </div>
               </li>
             ))}
           </ol>
